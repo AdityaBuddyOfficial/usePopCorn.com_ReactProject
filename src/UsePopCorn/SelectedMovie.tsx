@@ -26,9 +26,11 @@ const SelectedMovie = ({ selectedId, handleMovieDetailClose, apiKey,handleAddWat
 
 
     async function getSelectedMovie(id: any) {
+
+        const controller= new AbortController();
         try {
            setIsLoading(true)
-            const res = await fetch(` https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`);
+            const res = await fetch(` https://www.omdbapi.com/?apikey=${apiKey}&i=${id}`,{signal:controller.signal});
             const data = await res.json();
             console.log("🚀 ~ SelectedMovie ~ data:", data)
             setMovieAfterSelect(data)
@@ -37,10 +39,17 @@ const SelectedMovie = ({ selectedId, handleMovieDetailClose, apiKey,handleAddWat
         catch (err) {
             console.log("err)", err)
         }
+
+        return controller.abort();
     }
 
     useEffect(() => {
+
+    
+
         getSelectedMovie(selectedId);
+
+      
     }, [selectedId])
 
 function handleAdd()

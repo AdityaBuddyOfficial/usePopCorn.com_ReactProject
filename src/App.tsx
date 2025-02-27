@@ -145,7 +145,21 @@ fetchMovie();
   }, [query])
 
 
-
+  useEffect(() => {
+    const handleKeyDown = (e:any) => {
+      console.log("Key pressed:", e.code); // Add this line
+      if (e.code === 'Escape') {
+        handleMovieDetailClose();
+        console.log("closing");
+      }
+    };
+  
+    document.addEventListener('keydown', handleKeyDown);
+  
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   return (
     <>
