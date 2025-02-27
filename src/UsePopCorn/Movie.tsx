@@ -1,8 +1,9 @@
 import React from 'react'
 
 const Movie = (props:any) => {
+  console.log("🚀 ~ Movie ~ props:", props)
   return (
-    <li key={props?.movie.imdbID}>
+    <li key={props?.movie.imdbID} onClick={()=>props.handleSelectMovie(props?.movie.imdbID)}>
     <img src={props?.movie.Poster} alt={`${props?.movie.Title} poster`} />
     <h3>{props?.movie.Title}</h3>
     <div>

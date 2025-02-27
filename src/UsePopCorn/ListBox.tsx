@@ -18,6 +18,7 @@ const Box = ({children}:any) => {
           </button>
           {isOpen &&
             children
+            
           }
        
         

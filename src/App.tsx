@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import NavBar from "./UsePopCorn/navBar";
 import Main from "./UsePopCorn/main";
 import Logo from "./UsePopCorn/logo";
@@ -10,6 +10,9 @@ import MovieList from "./UsePopCorn/MovieList";
 import WatchedMovieList from "./UsePopCorn/WatchedMovieList";
 import WatchedSummary from "./UsePopCorn/WatchedSummary";
 import Box from "./UsePopCorn/ListBox";
+import Loader from "./UsePopCorn/Loader";
+import ErrorMessage from "./UsePopCorn/Error";
+import SelectedMovie from "./UsePopCorn/SelectedMovie";
 
 const tempMovieData = [
   {
@@ -58,28 +61,118 @@ const tempWatchedData = [
   },
 ];
 
-
+const apiKey = "cb936a06";
 
 export default function App() {
-
+  const [query, setQuery] = useState("");
   const [movies, setMovies] = useState(tempMovieData || []);
-  const [watched, setWatched] = useState(tempWatchedData || []);
+  console.log("🚀 ~ App ~ movies:", movies)
+  const [watched, setWatched] = useState([]);
+  console.log("🚀 ~ App ~ watched:", watched)
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const[ selectedId,setSelectedId]=useState(null)
+
+
+  // const tempQuery="interstellar";
+
+  async function fetchMovie() {
+   
+    try {
+
+      setIsLoading(true)
+      setError("");
+
+      const res = await fetch((` https://www.omdbapi.com/?apikey=${apiKey}&s=${query}`))
+      if (!res.ok) {
+        throw new Error("Somthing went wrong in fetching the data")
+      }
+
+      const data = await res.json()
+
+      if(data.Response==="False")
+      {
+        throw new Error("Movie Not Found")
+      }
+
+      setMovies(data.Search)
+      setIsLoading(false)
+    }
+
+    catch (err: any) {
+      console.log(err)
+      setError(err.message)
+    }
+
+    finally{
+      setIsLoading(false)
+    }
+  }
+
+
+  function handleSelectMovie(id:any)
+  {
+    setSelectedId((selectedId)=>id===selectedId?null:id)
+  }
+
+  function handleMovieDetailClose()
+  {
+    setSelectedId(null)
+  }
+
+
+  function handleAddWatched(movie:any)
+  {
+    setWatched((watched:any)=>[...watched,movie])
+  }
+
+  function handleDeleteWatched(id:any) {
+    setWatched((watched) => watched.filter((movie) => movie.indbId
+    !== id));
+  }
+  
+
+  useEffect(() => {
+    if(!query.length)
+      {
+        setMovies([])
+        setError("")
+        return
+      } 
+      
+
+fetchMovie();
+  }, [query])
+
+
+
 
   return (
     <>
 
       <NavBar >
-
-        <Search />
+        <Search query={query} setQuery={setQuery}/>
         <NumResult movies={movies} />
       </NavBar>
       <Main >
-        <Box ><MovieList movies={movies} /></Box>
+        <Box>
+          {isLoading && <Loader />}
+          {!isLoading && !error && <MovieList movies={movies}  handleSelectMovie={ handleSelectMovie} />}
+          {error && <ErrorMessage message={error} />}
 
-        <Box> <WatchedSummary watched={watched} />
-        < WatchedMovieList watched={watched}/></Box>
+        </Box>
+        <Box> 
         
-        </Main>
+          {selectedId?
+          <SelectedMovie selectedId={selectedId} handleMovieDetailClose={handleMovieDetailClose} apiKey={apiKey}
+          handleAddWatched={handleAddWatched}/>:
+           <>
+          <WatchedSummary watched={watched} />
+          < WatchedMovieList watched={watched}
+          handleDeleteWatched={handleDeleteWatched} />
+          </>}
+</Box>
+      </Main>
 
     </>
   );
